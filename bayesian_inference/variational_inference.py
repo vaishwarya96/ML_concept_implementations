@@ -166,3 +166,20 @@ plt.fill_between(X.flatten(), q1, q2, alpha=0.2)
 plt.show()
 
     
+#Analytical KL divergence and reconstruction loss
+#Above we have implemented ELBO by sampling from the variational posterior. It turns out that for the KL-divergence term, this isn’t necessary as there is an analytical solution. For the Gaussian case, Diederik P. Kingma and Max Welling (2013. Auto-encoding variational bayes) included the solution in Appendix B.
+# For the likelihood term, we did implement Guassian log likelihood, this term can also be replaced with a similar loss functions. For Gaussian likelihood we can use squared mean error loss, for Bernoulli likelihood we could use binary cross entropy etc. If we do that for the earlier defined model, we can replace the loss function as defined below:
+
+def det_loss(y, y_pred, mu, log_var):    
+    reconstruction_error = (0.5 * (y - y_pred)**2).sum()
+    kl_divergence = (-0.5 * torch.sum(1 + log_var - mu**2 - log_var.exp()))
+
+    return (reconstruction_error + kl_divergence).sum()
+
+# Aleatoric and epistemic uncertainty
+#The above was an example of modelling aleatoric uncertainty
+#Now we will see how we can model epistemic uncertainty
+class LinearVariational(nn.Module):
+    def __init__(self, in_features, out_features, parent, n_batches, bias=True):
+        super().__init__()
+        
